@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>flappy-Bird</title>
+	<style>
+		canvas{
+			position: absolute;
+			left: 400px;
+			border: 1px solid pink;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="cvs" width="800" height="600"></canvas>
+	<script src="loadImage.js"></script>
+	<script src="sky.js"></script>
+	<script src="land.js"></script>
+	<script src="pipe.js"></script>
+	<script src="bird.js"></script>
+
+	<script>
+		function extend(o1, o2){
+			for(var key in o2){
+				if( o2.hasOwnProperty(key) ){
+					o1[key] = o2[key];
+				}
+			}
+		}
+	</script>
+
+	<script>
+		var cvs = document.getElementById("cvs");
+		var ctx = cvs.getContext("2d");
+
+		loadImage({
+			bird:"./images/birds.png",
+			sky:"./images/sky.png",
+			land:"./images/land.png",
+			pipeDown:"./images/pipe2.png",
+			pipeUp:"./images/pipe1.png"
+		},function(imgObj){
+
+			//根据画布大小设置画布大小
+			cvs.width = imgObj.sky.width;
+			cvs.height = imgObj.sky.height;
+
+			//用来存储所需要的所有东西
+			//var roles = [];
+
+			//创建背景,需要两张图片才能无缝连接			
+			var sky = new Sky(ctx, imgObj.sky, 10);
+			var sky2 = new Sky(ctx, imgObj.sky, 10);
+
+			//创建大地，3个land已经可以填满画布的宽，但第一张还没有完全出去，最右边已经出来了，就会导致右边空出来一块一会儿才被补上，故需要四张图片才能无缝连接。
+			var land = new Land(ctx, imgObj.land, 10);
+			var land1= new Land(ctx, imgObj.land, 10);
+			var land2 = new Land(ctx, imgObj.land, 10);
+			var land3 = new Land(ctx, imgObj.land, 10);
+
+			//创建管道
+			var pipe = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+			var pipe1 = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+			var pipe2 = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+			var pipe3 = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+			// var pipe4 = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+			// var pipe5 = new Pipe(ctx, imgObj.pipeDown, imgObj.pipeUp, 120, imgObj.land.height, 6);
+
+			//创建鸟
+			var bird = new Bird(ctx, imgObj.bird, 3, 1, 20, 20);
+
+			//定时器控制画面运动
+			var timer = setInterval(function() {
+				/*
+				*	每次绘制前先要判断小鸟是否撞到路径，如果碰撞则结束路径。
+				**/
+				var birdCoreX = bird.x + bird.width / 2;
+				var birdCoreY = bird.y + bird.height / 2;
+
+				//如果小鸟撞向管道或者飞到天空或者撞到地面都会结束定时器
+				if( ctx.isPointInPath( birdCoreX, birdCoreY ) 
+					|| birdCoreY < 0 
+					|| birdCoreY > 
+					//(ctx.canvas.height - imgObj.land.height)
+					(land.y)) {
+					clearInterval(timer);
+					ctx.fillStyle = 'rgba(100, 100, 100, 0.8)';
+					ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+					ctx.textAlign = 'center';
+					ctx.textBaseLine = 'middle';
+					ctx.fillStyle = 'red';
+					ctx.font = '900 40px 微软雅黑'
+					ctx.fillText('GAME OVER', ctx.canvas.width / 2, ctx.canvas.height / 2);
+					//跳出循环，一旦游戏结束不再执行下面的代码，不会覆盖掉文字
+					return;
+				}
+
+				sky.draw();
+				sky.update();
+
+				sky2.draw();
+				sky2.update();	
+
+				land.draw();
+				land.update();
+
+				land1.draw();
+				land1.update();
+
+				land2.draw();
+				land2.update();
+
+				land3.draw();
+				land3.update();
+
+				bird.draw();
+				bird.update();
+				bird.bind();
+
+				//先清除上一次的路径，再绘制新的路径
+				ctx.beginPath();
+
+				pipe.draw();
+				pipe.update();
+
+				pipe1.draw();
+				pipe1.update();
+
+				pipe2.draw();
+				pipe2.update();
+
+				pipe3.draw();
+				pipe3.update();
+
+				// pipe4.draw();
+				// pipe4.update();
+
+				// pipe5.draw();
+				// pipe5.update();
+
+
+			},50);
+			
+		});
+	</script>
+</body>
+</html>
